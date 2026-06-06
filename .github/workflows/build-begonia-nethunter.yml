@@ -161,34 +161,24 @@ jobs:
             if [ -d "mt7603u-driver/mt7603_firmware" ]; then
               cp mt7603u-driver/mt7603_firmware/* AnyKernel3/modules/ 2>/dev/null || true
             fi
-            # Create install script
-            cat > AnyKernel3/modules/install-mt7603u.sh << 'MODEOF'
-#!/system/bin/sh
-# MT7603U WiFi driver installer for NetHunter
-# Run as root after flashing the kernel
-
-# Usage: sh /data/local/tmp/install-mt7603u.sh
-
-MODDIR="$(dirname "$(readlink -f "$0")")"
-
-# Copy firmware
-mount -o remount,rw / 2>/dev/null
-mkdir -p /lib/firmware 2>/dev/null
-cp -f "$MODDIR"/MT7603USTA.dat /lib/firmware/ 2>/dev/null
-cp -f "$MODDIR"/*.bin /lib/firmware/ 2>/dev/null
-
-# Load module
-insmod "$MODDIR"/mt7603usta.ko
-
-# Verify
-if lsmod | grep -q mt7603; then
-  echo "MT7603U driver loaded successfully"
-  echo "Interface name:"
-  iw dev 2>/dev/null || ip link show 2>/dev/null | grep -E "^[0-9]+: ra"
-else
-  echo "Failed to load MT7603U driver"
-fi
-MODEOF
+            # Create install script line by line (avoid heredoc in YAML)
+            echo '#!/system/bin/sh' > AnyKernel3/modules/install-mt7603u.sh
+            echo 'MODDIR="$(dirname "$(readlink -f "$0")")"' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'mount -o remount,rw / 2>/dev/null || true' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'mkdir -p /lib/firmware 2>/dev/null || true' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'cp -f "$MODDIR"/MT7603USTA.dat /lib/firmware/ 2>/dev/null || true' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'cp -f "$MODDIR"/*.bin /lib/firmware/ 2>/dev/null || true' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'insmod "$MODDIR"/mt7603usta.ko' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'if lsmod | grep -q mt7603; then' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '  echo "MT7603U driver loaded successfully"' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '  echo "Interface name:"' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '  iw dev 2>/dev/null || ip link show 2>/dev/null | grep -E "^[0-9]+: ra" || true' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'else' >> AnyKernel3/modules/install-mt7603u.sh
+            echo '  echo "Failed to load MT7603U driver"' >> AnyKernel3/modules/install-mt7603u.sh
+            echo 'fi' >> AnyKernel3/modules/install-mt7603u.sh
             chmod +x AnyKernel3/modules/install-mt7603u.sh
           else
             echo "MT7603U vendor module not found, kernel only"
