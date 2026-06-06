@@ -134,6 +134,7 @@ jobs:
           make LINUX KSRC=${{ env.OUT_DIR }} \
             ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
             -j$(nproc) 2>&1 || echo "WARNING: mt7603u vendor driver build failed, continuing anyway"
 
       - name: Package AnyKernel3
